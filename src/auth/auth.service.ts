@@ -30,47 +30,27 @@ export class AuthenticationService {
       ...registrationData,
       password: hashedPassword,
     });
-    createdUser.password = undefined;
+    // createdUser.password = undefined;
     return createdUser;
   }
 
   public async getAuthenticatedUser(email: string, hashedPassword: string) {
-    try {
-      const user = await this.usersService.getByEmail(email);
-      const isPasswordMatching = await bcrypt.compare(
-        hashedPassword,
-        user.password,
-      );
-      if (!isPasswordMatching) {
-        throw new HttpException(
-          'Wrong credentials provided',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      user.password = undefined;
-      return user;
-    } catch (error) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-  private async verifyPassword(
-    plainTextPassword: string,
-    hashedPassword: string,
-  ) {
+    const user = await this.usersService.getByEmail(email);
     const isPasswordMatching = await bcrypt.compare(
-      plainTextPassword,
       hashedPassword,
+      user.password,
     );
+
     if (!isPasswordMatching) {
       throw new HttpException(
         'Wrong credentials provided',
         HttpStatus.BAD_REQUEST,
       );
     }
+    // user.password = undefined;
+    return user;
   }
+
   public createToken(userId: string) {
     const payload: TokenPayload = { userId };
     const secret = this.configService.get('JWT_SECRET');

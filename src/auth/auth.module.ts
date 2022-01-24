@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { AuthenticationService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { AuthenticationController } from './auth.controller';
@@ -7,14 +7,14 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
     ConfigModule,
-    JwtModule.registerAsync(
-      {
+    JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
@@ -23,10 +23,17 @@ import { JwtStrategy } from './strategies/jwt.strategy';
           expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}s`,
         },
       }),
-    }
-    ),
+    }),
   ],
-  providers: [AuthenticationService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthenticationService,
+    LocalStrategy,
+    JwtStrategy,
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: ClassSerializerInterceptor,
+    // },
+  ],
   controllers: [AuthenticationController],
 })
 export class AuthenticationModule {}

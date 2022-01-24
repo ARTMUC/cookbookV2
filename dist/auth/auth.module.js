@@ -35,7 +35,11 @@ AuthenticationModule = __decorate([
                 }),
             }),
         ],
-        providers: [auth_service_1.AuthenticationService, local_strategy_1.LocalStrategy, jwt_strategy_1.JwtStrategy],
+        providers: [
+            auth_service_1.AuthenticationService,
+            local_strategy_1.LocalStrategy,
+            jwt_strategy_1.JwtStrategy,
+        ],
         controllers: [auth_controller_1.AuthenticationController],
     })
 ], AuthenticationModule);

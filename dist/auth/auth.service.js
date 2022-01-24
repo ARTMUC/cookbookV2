@@ -27,28 +27,15 @@ let AuthenticationService = class AuthenticationService {
             throw new common_1.HttpException('User with that email already exists', common_1.HttpStatus.BAD_REQUEST);
         const hashedPassword = await bcrypt.hash(registrationData.password, 10);
         const createdUser = await this.usersService.create(Object.assign(Object.assign({}, registrationData), { password: hashedPassword }));
-        createdUser.password = undefined;
         return createdUser;
     }
     async getAuthenticatedUser(email, hashedPassword) {
-        try {
-            const user = await this.usersService.getByEmail(email);
-            const isPasswordMatching = await bcrypt.compare(hashedPassword, user.password);
-            if (!isPasswordMatching) {
-                throw new common_1.HttpException('Wrong credentials provided', common_1.HttpStatus.BAD_REQUEST);
-            }
-            user.password = undefined;
-            return user;
-        }
-        catch (error) {
-            throw new common_1.HttpException('Wrong credentials provided', common_1.HttpStatus.BAD_REQUEST);
-        }
-    }
-    async verifyPassword(plainTextPassword, hashedPassword) {
-        const isPasswordMatching = await bcrypt.compare(plainTextPassword, hashedPassword);
+        const user = await this.usersService.getByEmail(email);
+        const isPasswordMatching = await bcrypt.compare(hashedPassword, user.password);
         if (!isPasswordMatching) {
             throw new common_1.HttpException('Wrong credentials provided', common_1.HttpStatus.BAD_REQUEST);
         }
+        return user;
     }
     createToken(userId) {
         const payload = { userId };

@@ -25,12 +25,11 @@ let AuthenticationController = class AuthenticationController {
     async register(registrationData) {
         return this.authenticationService.signup(registrationData);
     }
-    async logIn(request, response) {
+    async logIn(request) {
         const { user } = request;
         const cookie = this.authenticationService.createToken(user.id);
-        response.setHeader('Set-Cookie', cookie);
-        user.password = undefined;
-        return response.send(user);
+        request.res.setHeader('Set-Cookie', cookie);
+        return user;
     }
     async logOut(request, response) {
         response.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
@@ -38,7 +37,6 @@ let AuthenticationController = class AuthenticationController {
     }
     authenticate(request) {
         const user = request.user;
-        user.password = undefined;
         return user;
     }
 };
@@ -54,9 +52,8 @@ __decorate([
     (0, common_1.UseGuards)(local_auth_guard_1.LocalAuthenticationGuard),
     (0, common_1.Post)('signin'),
     __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthenticationController.prototype, "logIn", null);
 __decorate([
