@@ -31,9 +31,9 @@ let AuthenticationController = class AuthenticationController {
         request.res.setHeader('Set-Cookie', cookie);
         return user;
     }
-    async logOut(request, response) {
-        response.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
-        return response.sendStatus(200);
+    async logOut(request) {
+        request.res.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
+        return 'you are logged out';
     }
     authenticate(request) {
         const user = request.user;
@@ -57,12 +57,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthenticationController.prototype, "logIn", null);
 __decorate([
+    (0, common_1.HttpCode)(200),
     (0, common_1.UseGuards)(jwt_auth_guard_1.default),
     (0, common_1.Post)('signout'),
     __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthenticationController.prototype, "logOut", null);
 __decorate([
