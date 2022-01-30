@@ -15,6 +15,12 @@ class User extends BaseEntity {
   @Column()
   @Exclude()
   password: string;
+
+  @Column({
+    nullable: true,
+  })
+  @Exclude()
+  hashedRefreshToken?: string;
 }
 
 export default User;

@@ -8,4 +8,6 @@ export declare class UsersService {
     getByEmail(email: string): Promise<User>;
     create(userData: CreateUserDto): Promise<User>;
     getById(id: string): Promise<User>;
+    saveRefreshToken(refreshToken: string, userId: string): Promise<void>;
+    removeRefreshToken(userId: string): Promise<import("typeorm").UpdateResult>;
 }

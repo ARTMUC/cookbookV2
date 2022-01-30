@@ -41,11 +41,28 @@ let AuthenticationService = class AuthenticationService {
         const payload = { userId };
         const secret = this.configService.get('JWT_SECRET');
         const expiresIn = this.configService.get('JWT_EXPIRATION_TIME');
-        const token = this.jwtService.sign(payload, { secret: secret });
+        const token = this.jwtService.sign(payload, {
+            secret: secret,
+            expiresIn: `${expiresIn}s`,
+        });
         return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
     }
+    createRefreshToken(userId) {
+        const payload = { userId };
+        const secret = this.configService.get('REFRESH_TOKEN_SECRET');
+        const expiresIn = this.configService.get('REFRESH_TOKEN_EXPIRATION_TIME');
+        const token = this.jwtService.sign(payload, {
+            secret: secret,
+            expiresIn: `${expiresIn}s`,
+        });
+        this.usersService.saveRefreshToken(token, userId);
+        return `Refresh=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
+    }
     getCookieForLogOut() {
-        return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+        return [
+            'Authentication=; HttpOnly; Path=/; Max-Age=0',
+            'Refresh=; HttpOnly; Path=/; Max-Age=0',
+        ];
     }
 };
 AuthenticationService = __decorate([

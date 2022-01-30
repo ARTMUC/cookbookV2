@@ -18,26 +18,38 @@ const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const local_auth_guard_1 = require("./guards/local-auth.guard");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
+const users_service_1 = require("../users/users.service");
+const refresh_jwt_guard_1 = require("./guards/refresh-jwt.guard");
 let AuthenticationController = class AuthenticationController {
-    constructor(authenticationService) {
+    constructor(authenticationService, usersService) {
         this.authenticationService = authenticationService;
+        this.usersService = usersService;
     }
     async register(registrationData) {
         return this.authenticationService.signup(registrationData);
     }
     async logIn(request) {
         const { user } = request;
-        const cookie = this.authenticationService.createToken(user.id);
-        request.res.setHeader('Set-Cookie', cookie);
+        const jwtCookie = this.authenticationService.createToken(user.id);
+        const refreshJwtCookie = this.authenticationService.createRefreshToken(user.id);
+        request.res.setHeader('Set-Cookie', [jwtCookie, refreshJwtCookie]);
         return user;
     }
     async logOut(request) {
         request.res.setHeader('Set-Cookie', this.authenticationService.getCookieForLogOut());
+        this.usersService.removeRefreshToken(request.user.id);
         return 'you are logged out';
     }
     authenticate(request) {
         const user = request.user;
         return user;
+    }
+    refreshToken(request) {
+        const user = request.user;
+        console.log(user);
+        const accessTokenCookie = this.authenticationService.createToken(user.id);
+        request.res.setHeader('Set-Cookie', accessTokenCookie);
+        return request.user;
     }
 };
 __decorate([
@@ -73,9 +85,18 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthenticationController.prototype, "authenticate", null);
+__decorate([
+    (0, common_1.UseGuards)(refresh_jwt_guard_1.default),
+    (0, common_1.Get)('refreshToken'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthenticationController.prototype, "refreshToken", null);
 AuthenticationController = __decorate([
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthenticationService])
+    __metadata("design:paramtypes", [auth_service_1.AuthenticationService,
+        users_service_1.UsersService])
 ], AuthenticationController);
 exports.AuthenticationController = AuthenticationController;
 //# sourceMappingURL=auth.controller.js.map

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import RegisterDto from './dto/register.dto';
 import TokenPayload from './interfaces/token-payload.interface';
 
@@ -30,7 +30,6 @@ export class AuthenticationService {
       ...registrationData,
       password: hashedPassword,
     });
-    // createdUser.password = undefined;
     return createdUser;
   }
 
@@ -55,11 +54,30 @@ export class AuthenticationService {
     const payload: TokenPayload = { userId };
     const secret = this.configService.get('JWT_SECRET');
     const expiresIn = this.configService.get('JWT_EXPIRATION_TIME');
-    const token = this.jwtService.sign(payload, { secret: secret });
+    const token = this.jwtService.sign(payload, {
+      secret: secret,
+      expiresIn: `${expiresIn}s`,
+    });
 
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
   }
+
+  public createRefreshToken(userId: string) {
+    const payload: TokenPayload = { userId };
+    const secret = this.configService.get('REFRESH_TOKEN_SECRET');
+    const expiresIn = this.configService.get('REFRESH_TOKEN_EXPIRATION_TIME');
+    const token = this.jwtService.sign(payload, {
+      secret: secret,
+      expiresIn: `${expiresIn}s`,
+    });
+    this.usersService.saveRefreshToken(token, userId);
+    return `Refresh=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
+  }
+
   public getCookieForLogOut() {
-    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+    return [
+      'Authentication=; HttpOnly; Path=/; Max-Age=0',
+      'Refresh=; HttpOnly; Path=/; Max-Age=0',
+    ];
   }
 }

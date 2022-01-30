@@ -16,6 +16,7 @@ const local_strategy_1 = require("./strategies/local.strategy");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
+const refresh_jwt_strategy_1 = require("./strategies/refresh-jwt.strategy");
 let AuthenticationModule = class AuthenticationModule {
 };
 AuthenticationModule = __decorate([
@@ -24,21 +25,13 @@ AuthenticationModule = __decorate([
             users_module_1.UsersModule,
             passport_1.PassportModule,
             config_1.ConfigModule,
-            jwt_1.JwtModule.registerAsync({
-                imports: [config_1.ConfigModule],
-                inject: [config_1.ConfigService],
-                useFactory: async (configService) => ({
-                    secret: configService.get('JWT_SECRET'),
-                    signOptions: {
-                        expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}s`,
-                    },
-                }),
-            }),
+            jwt_1.JwtModule.register({}),
         ],
         providers: [
             auth_service_1.AuthenticationService,
             local_strategy_1.LocalStrategy,
             jwt_strategy_1.JwtStrategy,
+            refresh_jwt_strategy_1.RefreshJwtStrategy,
         ],
         controllers: [auth_controller_1.AuthenticationController],
     })

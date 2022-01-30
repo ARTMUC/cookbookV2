@@ -9,34 +9,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JwtStrategy = void 0;
+exports.RefreshJwtStrategy = void 0;
 const passport_jwt_1 = require("passport-jwt");
 const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const users_service_1 = require("../../users/users.service");
-let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt') {
+const bcrypt = require("bcryptjs");
+let RefreshJwtStrategy = class RefreshJwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt-refresh-token') {
     constructor(configService, userService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
                 (request) => {
                     var _a;
-                    return (_a = request === null || request === void 0 ? void 0 : request.cookies) === null || _a === void 0 ? void 0 : _a.Authentication;
+                    return (_a = request === null || request === void 0 ? void 0 : request.cookies) === null || _a === void 0 ? void 0 : _a.Refresh;
                 },
             ]),
-            secretOrKey: configService.get('JWT_SECRET'),
+            secretOrKey: configService.get('REFRESH_TOKEN_SECRET'),
+            passReqToCallback: true,
         });
         this.configService = configService;
         this.userService = userService;
     }
-    async validate(payload) {
-        return this.userService.getById(payload.userId);
+    async validate(request, payload) {
+        var _a;
+        const refreshToken = (_a = request.cookies) === null || _a === void 0 ? void 0 : _a.Refresh;
+        const user = await this.userService.getById(payload.userId);
+        const isMatch = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+        if (!isMatch)
+            throw new common_1.HttpException('Unauthorized', 401);
+        return user;
     }
 };
-JwtStrategy = __decorate([
+RefreshJwtStrategy = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,
         users_service_1.UsersService])
-], JwtStrategy);
-exports.JwtStrategy = JwtStrategy;
-//# sourceMappingURL=jwt.strategy.js.map
+], RefreshJwtStrategy);
+exports.RefreshJwtStrategy = RefreshJwtStrategy;
+//# sourceMappingURL=refresh-jwt.strategy.js.map

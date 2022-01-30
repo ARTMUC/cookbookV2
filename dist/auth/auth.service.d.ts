@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import RegisterDto from './dto/register.dto';
 export declare class AuthenticationService {
     private readonly usersService;
@@ -10,5 +10,6 @@ export declare class AuthenticationService {
     signup(registrationData: RegisterDto): Promise<import("../users/entities/user.entity").default>;
     getAuthenticatedUser(email: string, hashedPassword: string): Promise<import("../users/entities/user.entity").default>;
     createToken(userId: string): string;
-    getCookieForLogOut(): string;
+    createRefreshToken(userId: string): string;
+    getCookieForLogOut(): string[];
 }

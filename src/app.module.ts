@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { AuthenticationModule } from './auth/auth.module';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
     TypeOrmModule.forRoot(),
     UsersModule,
     AuthenticationModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

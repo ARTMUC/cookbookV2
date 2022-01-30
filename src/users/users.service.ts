@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import User from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -42,4 +43,30 @@ export class UsersService {
       HttpStatus.NOT_FOUND,
     );
   }
+
+  async saveRefreshToken(refreshToken: string, userId: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    console.log(refreshToken);
+    console.log('------------------------------------------');
+    console.log(hashedRefreshToken);
+    await this.usersRepository.update(userId, {
+      hashedRefreshToken,
+    });
+  }
+  async removeRefreshToken(userId: string) {
+    return this.usersRepository.update(userId, {
+      hashedRefreshToken: null,
+    });
+  }
+  // ************ I will not be using this one for now **************
+  // async getRefreshTokenId(userId: string) {
+  //   const { hashedRefreshToken } = await getConnection()
+  //     .createQueryBuilder()
+  //     .select('user.hashedRefreshToken')
+  //     .from(User, 'user')
+  //     .where('user.id = :id', { id: userId })
+  //     .getOne();
+  //   return hashedRefreshToken;
+  // }
+  // ************************************************************************
 }

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("./entities/user.entity");
+const bcrypt = require("bcryptjs");
 let UsersService = class UsersService {
     constructor(usersRepository) {
         this.usersRepository = usersRepository;
@@ -43,6 +44,20 @@ let UsersService = class UsersService {
             return user;
         }
         throw new common_1.HttpException('User with this id does not exist', common_1.HttpStatus.NOT_FOUND);
+    }
+    async saveRefreshToken(refreshToken, userId) {
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+        console.log(refreshToken);
+        console.log('------------------------------------------');
+        console.log(hashedRefreshToken);
+        await this.usersRepository.update(userId, {
+            hashedRefreshToken,
+        });
+    }
+    async removeRefreshToken(userId) {
+        return this.usersRepository.update(userId, {
+            hashedRefreshToken: null,
+        });
     }
 };
 UsersService = __decorate([

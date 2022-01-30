@@ -15,7 +15,7 @@ const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const users_service_1 = require("../../users/users.service");
-let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy, 'jwt') {
+let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(configService, userService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
@@ -39,4 +39,4 @@ JwtStrategy = __decorate([
         users_service_1.UsersService])
 ], JwtStrategy);
 exports.JwtStrategy = JwtStrategy;
-//# sourceMappingURL=jwt.strategy.js.map
+//# sourceMappingURL=jwt.strategy%20copy.js.map

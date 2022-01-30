@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const recipes_service_1 = require("./recipes.service");
 const create_recipe_dto_1 = require("./dto/create-recipe.dto");
 const update_recipe_dto_1 = require("./dto/update-recipe.dto");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let RecipesController = class RecipesController {
     constructor(recipesService) {
         this.recipesService = recipesService;
@@ -40,7 +39,6 @@ let RecipesController = class RecipesController {
 };
 __decorate([
     (0, common_1.Post)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.default),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_recipe_dto_1.CreateRecipeDto]),
