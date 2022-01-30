@@ -14,12 +14,14 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcryptjs");
+const email_service_1 = require("../email/email.service");
 const users_service_1 = require("../users/users.service");
 let AuthenticationService = class AuthenticationService {
-    constructor(usersService, jwtService, configService) {
+    constructor(usersService, jwtService, configService, emailService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
+        this.emailService = emailService;
     }
     async signup(registrationData) {
         const user = await this.usersService.checkIfUserExists(registrationData.email);
@@ -27,6 +29,7 @@ let AuthenticationService = class AuthenticationService {
             throw new common_1.HttpException('User with that email already exists', common_1.HttpStatus.BAD_REQUEST);
         const hashedPassword = await bcrypt.hash(registrationData.password, 10);
         const createdUser = await this.usersService.create(Object.assign(Object.assign({}, registrationData), { password: hashedPassword }));
+        await this.emailService.sendUserConfirmationEmail(createdUser);
         return createdUser;
     }
     async getAuthenticatedUser(email, hashedPassword) {
@@ -69,7 +72,8 @@ AuthenticationService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
         jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        email_service_1.EmailService])
 ], AuthenticationService);
 exports.AuthenticationService = AuthenticationService;
 //# sourceMappingURL=auth.service.js.map

@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { EmailService } from 'src/email/email.service';
 import { UsersService } from '../users/users.service';
 import RegisterDto from './dto/register.dto';
 import TokenPayload from './interfaces/token-payload.interface';
@@ -12,6 +13,7 @@ export class AuthenticationService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async signup(registrationData: RegisterDto) {
@@ -30,6 +32,7 @@ export class AuthenticationService {
       ...registrationData,
       password: hashedPassword,
     });
+    await this.emailService.sendUserConfirmationEmail(createdUser);
     return createdUser;
   }
 

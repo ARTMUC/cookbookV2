@@ -9,9 +9,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
+import { EmailService } from 'src/email/email.service';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
+    EmailModule,
     UsersModule,
     PassportModule,
     ConfigModule,

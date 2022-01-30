@@ -17,11 +17,13 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const refresh_jwt_strategy_1 = require("./strategies/refresh-jwt.strategy");
+const email_module_1 = require("../email/email.module");
 let AuthenticationModule = class AuthenticationModule {
 };
 AuthenticationModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            email_module_1.EmailModule,
             users_module_1.UsersModule,
             passport_1.PassportModule,
             config_1.ConfigModule,
