@@ -16,6 +16,14 @@ class User extends BaseEntity {
   @Exclude()
   password: string;
 
+  @Column({ default: false })
+  @Exclude()
+  isUserEmailConfirmed: boolean;
+
+  @Column()
+  @Exclude()
+  emailConfirmationToken: string;
+
   @Column({
     nullable: true,
   })

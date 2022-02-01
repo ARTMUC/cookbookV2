@@ -17,10 +17,10 @@ let EmailService = class EmailService {
         this.mailerService = mailerService;
     }
     async sendUserConfirmationEmail(user) {
-        const token = 'test';
-        const url = `example.com/auth/confirm?token=${token}`;
-        const confirmationEmailText = `localhost:5000/api/v1/auth/confirm/${token}`;
-        const confirmationEmailHTML = `<a href=\"http://localhost:5000/api/v1/auth/confirm/${token}\">Hello ${user.name} click here to confirm email </a>`;
+        const { emailConfirmationToken, id, name, email } = user;
+        const url = `http://localhost:5000/auth/confirm-email`;
+        const confirmationEmailText = url + '/' + emailConfirmationToken + '/' + id;
+        const confirmationEmailHTML = `<a href=\"${url}/${emailConfirmationToken}/${id}\">Hello ${name} click here to confirm email </a>`;
         await this.mailerService.sendMail({
             to: 'artmuc911@gmail.com',
             subject: 'Welcome to CookBook! Confirm your Email',

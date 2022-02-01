@@ -10,4 +10,5 @@ export declare class UsersService {
     getById(id: string): Promise<User>;
     saveRefreshToken(refreshToken: string, userId: string): Promise<void>;
     removeRefreshToken(userId: string): Promise<import("typeorm").UpdateResult>;
+    setConfirmUserEmail(userId: string): Promise<import("typeorm").UpdateResult>;
 }

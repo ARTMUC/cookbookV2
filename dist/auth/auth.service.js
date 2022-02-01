@@ -16,6 +16,7 @@ const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcryptjs");
 const email_service_1 = require("../email/email.service");
 const users_service_1 = require("../users/users.service");
+const uuid_1 = require("uuid");
 let AuthenticationService = class AuthenticationService {
     constructor(usersService, jwtService, configService, emailService) {
         this.usersService = usersService;
@@ -28,16 +29,19 @@ let AuthenticationService = class AuthenticationService {
         if (user)
             throw new common_1.HttpException('User with that email already exists', common_1.HttpStatus.BAD_REQUEST);
         const hashedPassword = await bcrypt.hash(registrationData.password, 10);
-        const createdUser = await this.usersService.create(Object.assign(Object.assign({}, registrationData), { password: hashedPassword }));
+        const emailConfirmationToken = (0, uuid_1.v4)();
+        const createdUser = await this.usersService.create(Object.assign(Object.assign({}, registrationData), { password: hashedPassword, emailConfirmationToken }));
         await this.emailService.sendUserConfirmationEmail(createdUser);
         return createdUser;
     }
-    async getAuthenticatedUser(email, hashedPassword) {
+    async getAuthenticatedUser(email, plainPassword) {
         const user = await this.usersService.getByEmail(email);
-        const isPasswordMatching = await bcrypt.compare(hashedPassword, user.password);
+        const isPasswordMatching = await bcrypt.compare(plainPassword, user.password);
         if (!isPasswordMatching) {
             throw new common_1.HttpException('Wrong credentials provided', common_1.HttpStatus.BAD_REQUEST);
         }
+        if (!user.isUserEmailConfirmed)
+            throw new common_1.HttpException('Please confirm your email first', common_1.HttpStatus.BAD_REQUEST);
         return user;
     }
     createToken(userId) {
@@ -60,6 +64,13 @@ let AuthenticationService = class AuthenticationService {
         });
         this.usersService.saveRefreshToken(token, userId);
         return `Refresh=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
+    }
+    async confirmUserEmailWithToken(id, token) {
+        const { emailConfirmationToken } = await this.usersService.getById(id);
+        if (token !== emailConfirmationToken)
+            throw new common_1.HttpException('wrong confirmation token - please contact administrator', common_1.HttpStatus.BAD_REQUEST);
+        await this.usersService.setConfirmUserEmail(id);
+        return 'email confirmed successfully';
     }
     getCookieForLogOut() {
         return [

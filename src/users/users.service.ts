@@ -46,9 +46,6 @@ export class UsersService {
 
   async saveRefreshToken(refreshToken: string, userId: string) {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    console.log(refreshToken);
-    console.log('------------------------------------------');
-    console.log(hashedRefreshToken);
     await this.usersRepository.update(userId, {
       hashedRefreshToken,
     });
@@ -58,6 +55,11 @@ export class UsersService {
       hashedRefreshToken: null,
     });
   }
+
+  async setConfirmUserEmail(userId: string) {
+    return this.usersRepository.update(userId, { isUserEmailConfirmed: true });
+  }
+
   // ************ I will not be using this one for now **************
   // async getRefreshTokenId(userId: string) {
   //   const { hashedRefreshToken } = await getConnection()

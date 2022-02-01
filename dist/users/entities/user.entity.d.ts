@@ -4,6 +4,8 @@ declare class User extends BaseEntity {
     email: string;
     name: string;
     password: string;
+    isUserEmailConfirmed: boolean;
+    emailConfirmationToken: string;
     hashedRefreshToken?: string;
 }
 export default User;

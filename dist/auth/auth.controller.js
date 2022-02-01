@@ -28,6 +28,9 @@ let AuthenticationController = class AuthenticationController {
     async register(registrationData) {
         return this.authenticationService.signup(registrationData);
     }
+    async confirmEmail(token, id) {
+        return this.authenticationService.confirmUserEmailWithToken(id, token);
+    }
     async logIn(request) {
         const { user } = request;
         const jwtCookie = this.authenticationService.createToken(user.id);
@@ -59,6 +62,14 @@ __decorate([
     __metadata("design:paramtypes", [register_dto_1.default]),
     __metadata("design:returntype", Promise)
 ], AuthenticationController.prototype, "register", null);
+__decorate([
+    (0, common_1.Get)('confirm-email/:token/:id'),
+    __param(0, (0, common_1.Param)('token')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], AuthenticationController.prototype, "confirmEmail", null);
 __decorate([
     (0, common_1.HttpCode)(200),
     (0, common_1.UseGuards)(local_auth_guard_1.LocalAuthenticationGuard),

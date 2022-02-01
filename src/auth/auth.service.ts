@@ -6,6 +6,7 @@ import { EmailService } from 'src/email/email.service';
 import { UsersService } from '../users/users.service';
 import RegisterDto from './dto/register.dto';
 import TokenPayload from './interfaces/token-payload.interface';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class AuthenticationService {
@@ -27,19 +28,21 @@ export class AuthenticationService {
       );
 
     const hashedPassword = await bcrypt.hash(registrationData.password, 10);
+    const emailConfirmationToken = uuid();
 
     const createdUser = await this.usersService.create({
       ...registrationData,
       password: hashedPassword,
+      emailConfirmationToken,
     });
     await this.emailService.sendUserConfirmationEmail(createdUser);
     return createdUser;
   }
 
-  public async getAuthenticatedUser(email: string, hashedPassword: string) {
+  public async getAuthenticatedUser(email: string, plainPassword: string) {
     const user = await this.usersService.getByEmail(email);
     const isPasswordMatching = await bcrypt.compare(
-      hashedPassword,
+      plainPassword,
       user.password,
     );
 
@@ -49,6 +52,11 @@ export class AuthenticationService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    if (!user.isUserEmailConfirmed)
+      throw new HttpException(
+        'Please confirm your email first',
+        HttpStatus.BAD_REQUEST,
+      );
     // user.password = undefined;
     return user;
   }
@@ -75,6 +83,17 @@ export class AuthenticationService {
     });
     this.usersService.saveRefreshToken(token, userId);
     return `Refresh=${token}; HttpOnly; Path=/; Max-Age=${expiresIn}`;
+  }
+
+  public async confirmUserEmailWithToken(id: string, token: string) {
+    const { emailConfirmationToken } = await this.usersService.getById(id);
+    if (token !== emailConfirmationToken)
+      throw new HttpException(
+        'wrong confirmation token - please contact administrator',
+        HttpStatus.BAD_REQUEST,
+      );
+    await this.usersService.setConfirmUserEmail(id);
+    return 'email confirmed successfully';
   }
 
   public getCookieForLogOut() {

@@ -31,6 +31,16 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", Boolean)
+], User.prototype, "isUserEmailConfirmed", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    (0, class_transformer_1.Exclude)(),
+    __metadata("design:type", String)
+], User.prototype, "emailConfirmationToken", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         nullable: true,
     }),

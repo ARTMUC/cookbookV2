@@ -47,9 +47,6 @@ let UsersService = class UsersService {
     }
     async saveRefreshToken(refreshToken, userId) {
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-        console.log(refreshToken);
-        console.log('------------------------------------------');
-        console.log(hashedRefreshToken);
         await this.usersRepository.update(userId, {
             hashedRefreshToken,
         });
@@ -58,6 +55,9 @@ let UsersService = class UsersService {
         return this.usersRepository.update(userId, {
             hashedRefreshToken: null,
         });
+    }
+    async setConfirmUserEmail(userId) {
+        return this.usersRepository.update(userId, { isUserEmailConfirmed: true });
     }
 };
 UsersService = __decorate([

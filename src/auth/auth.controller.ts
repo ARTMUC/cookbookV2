@@ -9,6 +9,7 @@ import {
   Res,
   ClassSerializerInterceptor,
   UseInterceptors,
+  Param,
 } from '@nestjs/common';
 import { AuthenticationService } from './auth.service';
 import RegisterDto from './dto/register.dto';
@@ -30,6 +31,11 @@ export class AuthenticationController {
   @Post('signup')
   async register(@Body() registrationData: RegisterDto) {
     return this.authenticationService.signup(registrationData);
+  }
+
+  @Get('confirm-email/:token/:id')
+  async confirmEmail(@Param('token') token: string, @Param('id') id: string) {
+    return this.authenticationService.confirmUserEmailWithToken(id, token);
   }
 
   @HttpCode(200)
