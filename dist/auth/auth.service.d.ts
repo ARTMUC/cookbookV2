@@ -9,8 +9,8 @@ export declare class AuthenticationService {
     private readonly configService;
     private readonly emailService;
     constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, emailService: EmailService);
-    signup(registrationData: RegisterDto): Promise<import("../users/entities/user.entity").default>;
-    getAuthenticatedUser(email: string, plainPassword: string): Promise<import("../users/entities/user.entity").default>;
+    signup(registrationData: RegisterDto): Promise<import("../users/entities/user.entity").User>;
+    getAuthenticatedUser(email: string, plainPassword: string): Promise<import("../users/entities/user.entity").User>;
     createToken(userId: string): string;
     createRefreshToken(userId: string): string;
     confirmUserEmailWithToken(id: string, token: string): Promise<string>;

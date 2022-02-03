@@ -49,7 +49,6 @@ let AuthenticationController = class AuthenticationController {
     }
     refreshToken(request) {
         const user = request.user;
-        console.log(user);
         const accessTokenCookie = this.authenticationService.createToken(user.id);
         request.res.setHeader('Set-Cookie', accessTokenCookie);
         return request.user;

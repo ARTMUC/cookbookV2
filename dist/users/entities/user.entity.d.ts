@@ -1,5 +1,5 @@
-import { BaseEntity } from 'typeorm';
-declare class User extends BaseEntity {
+import { Recipe } from 'src/recipes/entities/recipe.entity';
+export declare class User {
     id: string;
     email: string;
     name: string;
@@ -7,5 +7,5 @@ declare class User extends BaseEntity {
     isUserEmailConfirmed: boolean;
     emailConfirmationToken: string;
     hashedRefreshToken?: string;
+    recipes: Recipe[];
 }
-export default User;

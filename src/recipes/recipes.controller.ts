@@ -7,25 +7,35 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import JwtAuthenticationGuard from 'src/auth/guards/jwt-auth.guard';
+import RequestWithUser from 'src/auth/interfaces/request-with-user.interface';
 
 @Controller('recipes')
+@UseGuards(JwtAuthenticationGuard)
 export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
   @Post()
-  // @UseGuards(JwtAuthenticationGuard) // example guard
-  create(@Body() createRecipeDto: CreateRecipeDto) {
-    return this.recipesService.create(createRecipeDto);
+  create(
+    @Body() createRecipeDto: CreateRecipeDto,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.recipesService.create(createRecipeDto, request.user);
   }
 
-  @Get()
-  findAll() {
-    return this.recipesService.findAll();
+  @Get(':page')
+  findAllShared(
+    @Query('sort') sort: string,
+    @Query('order') order: 'ASC' | 'DESC',
+    @Param('page') page: string,
+  ) {
+    return this.recipesService.findAllShared(sort, order, parseInt(page));
   }
 
   @Get(':id')

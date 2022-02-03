@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getConnection, Repository } from 'typeorm';
-import User from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
 
@@ -29,7 +29,7 @@ export class UsersService {
   }
 
   async create(userData: CreateUserDto) {
-    const newUser = await this.usersRepository.create(userData);
+    const newUser = this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
     return newUser;
   }
@@ -59,16 +59,4 @@ export class UsersService {
   async setConfirmUserEmail(userId: string) {
     return this.usersRepository.update(userId, { isUserEmailConfirmed: true });
   }
-
-  // ************ I will not be using this one for now **************
-  // async getRefreshTokenId(userId: string) {
-  //   const { hashedRefreshToken } = await getConnection()
-  //     .createQueryBuilder()
-  //     .select('user.hashedRefreshToken')
-  //     .from(User, 'user')
-  //     .where('user.id = :id', { id: userId })
-  //     .getOne();
-  //   return hashedRefreshToken;
-  // }
-  // ************************************************************************
 }

@@ -73,7 +73,6 @@ export class AuthenticationController {
   @Get('refreshToken')
   refreshToken(@Req() request: RequestWithUser) {
     const user = request.user;
-    console.log(user);
     const accessTokenCookie = this.authenticationService.createToken(user.id);
     request.res.setHeader('Set-Cookie', accessTokenCookie);
     return request.user;

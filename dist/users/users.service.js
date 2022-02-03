@@ -34,7 +34,7 @@ let UsersService = class UsersService {
         throw new common_1.HttpException('User with this email does not exist', common_1.HttpStatus.NOT_FOUND);
     }
     async create(userData) {
-        const newUser = await this.usersRepository.create(userData);
+        const newUser = this.usersRepository.create(userData);
         await this.usersRepository.save(newUser);
         return newUser;
     }
@@ -62,7 +62,7 @@ let UsersService = class UsersService {
 };
 UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.default)),
+    __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository])
 ], UsersService);
 exports.UsersService = UsersService;

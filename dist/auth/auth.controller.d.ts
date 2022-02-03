@@ -6,10 +6,10 @@ export declare class AuthenticationController {
     private readonly authenticationService;
     private readonly usersService;
     constructor(authenticationService: AuthenticationService, usersService: UsersService);
-    register(registrationData: RegisterDto): Promise<import("../users/entities/user.entity").default>;
+    register(registrationData: RegisterDto): Promise<import("../users/entities/user.entity").User>;
     confirmEmail(token: string, id: string): Promise<string>;
-    logIn(request: RequestWithUser): Promise<import("../users/entities/user.entity").default>;
+    logIn(request: RequestWithUser): Promise<import("../users/entities/user.entity").User>;
     logOut(request: RequestWithUser): Promise<string>;
-    authenticate(request: RequestWithUser): import("../users/entities/user.entity").default;
-    refreshToken(request: RequestWithUser): import("../users/entities/user.entity").default;
+    authenticate(request: RequestWithUser): import("../users/entities/user.entity").User;
+    refreshToken(request: RequestWithUser): import("../users/entities/user.entity").User;
 }

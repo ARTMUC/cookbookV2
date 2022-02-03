@@ -9,9 +9,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = void 0;
 const class_transformer_1 = require("class-transformer");
+const recipe_entity_1 = require("../../recipes/entities/recipe.entity");
 const typeorm_1 = require("typeorm");
-let User = class User extends typeorm_1.BaseEntity {
+let User = class User {
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
@@ -22,7 +24,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ length: 150 }),
     __metadata("design:type", String)
 ], User.prototype, "name", void 0);
 __decorate([
@@ -47,8 +49,12 @@ __decorate([
     (0, class_transformer_1.Exclude)(),
     __metadata("design:type", String)
 ], User.prototype, "hashedRefreshToken", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => recipe_entity_1.Recipe, (recipe) => recipe.user),
+    __metadata("design:type", Array)
+], User.prototype, "recipes", void 0);
 User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);
-exports.default = User;
+exports.User = User;
 //# sourceMappingURL=user.entity.js.map

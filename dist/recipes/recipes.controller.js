@@ -17,15 +17,16 @@ const common_1 = require("@nestjs/common");
 const recipes_service_1 = require("./recipes.service");
 const create_recipe_dto_1 = require("./dto/create-recipe.dto");
 const update_recipe_dto_1 = require("./dto/update-recipe.dto");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let RecipesController = class RecipesController {
     constructor(recipesService) {
         this.recipesService = recipesService;
     }
-    create(createRecipeDto) {
-        return this.recipesService.create(createRecipeDto);
+    create(createRecipeDto, request) {
+        return this.recipesService.create(createRecipeDto, request.user);
     }
-    findAll() {
-        return this.recipesService.findAll();
+    findAllShared(sort, order, page) {
+        return this.recipesService.findAllShared(sort, order, parseInt(page));
     }
     findOne(id) {
         return this.recipesService.findOne(+id);
@@ -40,16 +41,20 @@ let RecipesController = class RecipesController {
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_recipe_dto_1.CreateRecipeDto]),
+    __metadata("design:paramtypes", [create_recipe_dto_1.CreateRecipeDto, Object]),
     __metadata("design:returntype", void 0)
 ], RecipesController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)(),
+    (0, common_1.Get)(':page'),
+    __param(0, (0, common_1.Query)('sort')),
+    __param(1, (0, common_1.Query)('order')),
+    __param(2, (0, common_1.Param)('page')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
-], RecipesController.prototype, "findAll", null);
+], RecipesController.prototype, "findAllShared", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -74,6 +79,7 @@ __decorate([
 ], RecipesController.prototype, "remove", null);
 RecipesController = __decorate([
     (0, common_1.Controller)('recipes'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.default),
     __metadata("design:paramtypes", [recipes_service_1.RecipesService])
 ], RecipesController);
 exports.RecipesController = RecipesController;
