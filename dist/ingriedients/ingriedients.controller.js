@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IngriedientsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -41,7 +42,7 @@ __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_ingriedient_dto_1.CreateIngriedientDto]),
+    __metadata("design:paramtypes", [typeof (_a = typeof create_ingriedient_dto_1.CreateIngriedientDto !== "undefined" && create_ingriedient_dto_1.CreateIngriedientDto) === "function" ? _a : Object]),
     __metadata("design:returntype", void 0)
 ], IngriedientsController.prototype, "create", null);
 __decorate([
@@ -62,7 +63,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_ingriedient_dto_1.UpdateIngriedientDto]),
+    __metadata("design:paramtypes", [String, typeof (_b = typeof update_ingriedient_dto_1.UpdateIngriedientDto !== "undefined" && update_ingriedient_dto_1.UpdateIngriedientDto) === "function" ? _b : Object]),
     __metadata("design:returntype", void 0)
 ], IngriedientsController.prototype, "update", null);
 __decorate([
@@ -74,7 +75,7 @@ __decorate([
 ], IngriedientsController.prototype, "remove", null);
 IngriedientsController = __decorate([
     (0, common_1.Controller)('ingriedients'),
-    __metadata("design:paramtypes", [ingriedients_service_1.IngriedientsService])
+    __metadata("design:paramtypes", [typeof (_c = typeof ingriedients_service_1.IngriedientsService !== "undefined" && ingriedients_service_1.IngriedientsService) === "function" ? _c : Object])
 ], IngriedientsController);
 exports.IngriedientsController = IngriedientsController;
 //# sourceMappingURL=ingriedients.controller.js.map

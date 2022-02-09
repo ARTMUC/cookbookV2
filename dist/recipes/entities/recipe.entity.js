@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recipe = void 0;
 const user_entity_1 = require("../../users/entities/user.entity");
 const typeorm_1 = require("typeorm");
+const recipe_ingriedient_entity_1 = require("./recipe_ingriedient.entity");
 let Recipe = class Recipe {
 };
 __decorate([
@@ -42,6 +43,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (user) => user.recipes),
     __metadata("design:type", user_entity_1.User)
 ], Recipe.prototype, "user", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => recipe_ingriedient_entity_1.RecipeToIngriedient, (recipeToIngriedient) => recipeToIngriedient.recipe),
+    __metadata("design:type", Array)
+], Recipe.prototype, "recipeToIngriedient", void 0);
 Recipe = __decorate([
     (0, typeorm_1.Entity)()
 ], Recipe);

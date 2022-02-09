@@ -25,5 +25,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateRecipeDto.prototype, "isShared", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], CreateRecipeDto.prototype, "ingriedients", void 0);
 exports.CreateRecipeDto = CreateRecipeDto;
 //# sourceMappingURL=create-recipe.dto.js.map

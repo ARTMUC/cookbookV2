@@ -9,13 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IngriedientsModule = void 0;
 const common_1 = require("@nestjs/common");
 const ingriedients_service_1 = require("./ingriedients.service");
-const ingriedients_controller_1 = require("./ingriedients.controller");
+const ingriedient_entity_1 = require("./entities/ingriedient.entity");
+const typeorm_1 = require("@nestjs/typeorm");
 let IngriedientsModule = class IngriedientsModule {
 };
 IngriedientsModule = __decorate([
     (0, common_1.Module)({
-        controllers: [ingriedients_controller_1.IngriedientsController],
-        providers: [ingriedients_service_1.IngriedientsService]
+        imports: [typeorm_1.TypeOrmModule.forFeature([ingriedient_entity_1.Ingriedient])],
+        providers: [ingriedients_service_1.IngriedientsService],
+        exports: [ingriedients_service_1.IngriedientsService],
     })
 ], IngriedientsModule);
 exports.IngriedientsModule = IngriedientsModule;

@@ -17,60 +17,142 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const recipe_entity_1 = require("./entities/recipe.entity");
+const ingriedients_service_1 = require("./ingriedients.service");
 let RecipesService = class RecipesService {
-    constructor(recipesRepository) {
+    constructor(recipesRepository, ingriedientsService) {
         this.recipesRepository = recipesRepository;
+        this.ingriedientsService = ingriedientsService;
     }
     async create(recipeData, user) {
+        const savedRecipe = await this.saveRecipe(recipeData, user);
+        recipeData.ingriedients.forEach(async (ingriedient) => {
+            await this.ingriedientsService.create(ingriedient, savedRecipe);
+        });
+        return 'success';
+    }
+    async saveRecipe(recipeData, user) {
         const newRecipe = this.recipesRepository.create(recipeData);
         newRecipe.user = user;
-        await this.recipesRepository.save(newRecipe);
-        return newRecipe;
+        return await this.recipesRepository.save(newRecipe);
     }
     async findAllShared(sortBy, order, page) {
-        const resultsPerPage = 2;
         const countSharedRecipes = await this.recipesRepository
             .createQueryBuilder('recipe')
             .where('recipe.isShared = :isShared', { isShared: true })
             .getCount();
-        console.log(`count is ${countSharedRecipes}`);
+        const resultsPerPage = 8;
         const totalPages = countSharedRecipes
             ? Math.ceil(countSharedRecipes / resultsPerPage)
             : 1;
-        let validatedPageNumber;
-        if (page <= 1) {
-            validatedPageNumber = 0;
-        }
-        else if (page >= totalPages) {
-            validatedPageNumber = totalPages - 1;
-        }
-        else {
-            validatedPageNumber = page - 1;
-        }
-        const sharedRecipes = await this.recipesRepository
+        const validatedPageNumber = page <= 0 ? 0 : page >= totalPages ? totalPages - 1 : page - 1;
+        const sharedRecipesQuery = (() => {
+            let query = this.recipesRepository.createQueryBuilder('recipe');
+            query = query.leftJoinAndSelect('recipe.user', 'user');
+            query = query.leftJoinAndSelect('recipe.recipeToIngriedient', 'recipeToIngriedient');
+            query = query.leftJoinAndSelect('recipeToIngriedient.ingriedient', 'ingriedient');
+            query = query.where('recipe.isShared = :isShared', {
+                isShared: true,
+            });
+            query = query.limit(resultsPerPage);
+            query = query.take(resultsPerPage * validatedPageNumber);
+            if (sortBy && order) {
+                query = query.orderBy(`recipe.${sortBy}`, order);
+            }
+            return query;
+        })();
+        const sharedRecipes = await sharedRecipesQuery.getMany();
+        const mappedSharedRecipes = sharedRecipes.map((recipe) => {
+            return this.mapRecipeQueryResult(recipe);
+        });
+        return mappedSharedRecipes;
+    }
+    async findAllUserRecipes(sortBy, order, page, userId) {
+        const countSharedRecipes = await this.recipesRepository
+            .createQueryBuilder('recipe')
+            .where('recipe.userId = :id', { id: userId })
+            .getCount();
+        const resultsPerPage = 8;
+        const totalPages = countSharedRecipes
+            ? Math.ceil(countSharedRecipes / resultsPerPage)
+            : 1;
+        const validatedPageNumber = page <= 0 ? 0 : page >= totalPages ? totalPages - 1 : page - 1;
+        const sharedRecipesQuery = (() => {
+            let query = this.recipesRepository.createQueryBuilder('recipe');
+            query = query.leftJoinAndSelect('recipe.user', 'user');
+            query = query.where('recipe.userId = :id', { id: userId });
+            query = query.leftJoinAndSelect('recipe.recipeToIngriedient', 'recipeToIngriedient');
+            query = query.leftJoinAndSelect('recipeToIngriedient.ingriedient', 'ingriedient');
+            query = query.limit(resultsPerPage);
+            query = query.take(resultsPerPage * validatedPageNumber);
+            if (sortBy && order) {
+                query = query.orderBy(`recipe.${sortBy}`, order);
+            }
+            return query;
+        })();
+        const userRecipes = await sharedRecipesQuery.getMany();
+        const mappedUserRecipes = userRecipes.map((recipe) => {
+            return this.mapRecipeQueryResult(recipe);
+        });
+        return mappedUserRecipes;
+    }
+    async findOne(id, userId) {
+        const recipe = await this.recipesRepository
             .createQueryBuilder('recipe')
             .leftJoinAndSelect('recipe.user', 'user')
-            .where('recipe.isShared = :isShared', { isShared: true })
-            .limit(resultsPerPage)
-            .take(resultsPerPage * validatedPageNumber)
-            .orderBy(`recipe.${sortBy}`, order)
-            .getMany();
-        return sharedRecipes;
+            .leftJoinAndSelect('recipe.recipeToIngriedient', 'recipeToIngriedient')
+            .leftJoinAndSelect('recipeToIngriedient.ingriedient', 'ingriedient')
+            .where('recipe.id = :id', { id })
+            .getOne();
+        if (!recipe)
+            throw new common_1.NotFoundException('recipe not found');
+        if (recipe.user.id !== userId && !recipe.isShared)
+            throw new common_1.NotFoundException('recipe not found');
+        return this.mapRecipeQueryResult(recipe);
     }
-    findOne(id) {
-        return `This action returns a #${id} recipe`;
+    mapRecipeQueryResult(recipe) {
+        return Object.assign(Object.assign({}, recipe), { recipeToIngriedient: undefined, ingriedients: recipe.recipeToIngriedient.map((el) => {
+                return {
+                    weight: el.weight,
+                    id: el.id,
+                    name: el.ingriedient.name,
+                    kcal: el.ingriedient.kcal,
+                };
+            }) });
     }
-    update(id, updateRecipeDto) {
-        return `This action updates a #${id} recipe`;
+    async update(id, updateRecipeData, user) {
+        const recipe = await this.findOne(id, user.id);
+        const patchedRecipeData = Object.assign(Object.assign({}, recipe), updateRecipeData);
+        const updatedRecipe = await this.updateRecipe(patchedRecipeData, user);
+        await this.ingriedientsService.removeAllInRecipe(id);
+        updateRecipeData.ingriedients.forEach(async (ingriedient) => {
+            await this.ingriedientsService.update(ingriedient, updatedRecipe);
+        });
+        return 'success';
     }
-    remove(id) {
-        return `This action removes a #${id} recipe`;
+    async updateRecipe(patchedRecipeData, user) {
+        patchedRecipeData.user = user;
+        return (await this.recipesRepository.save(patchedRecipeData));
+    }
+    async remove(id, userId) {
+        const recipe = await this.recipesRepository
+            .createQueryBuilder('recipe')
+            .leftJoinAndSelect('recipe.user', 'user')
+            .where('recipe.userId = :userId', { userId })
+            .andWhere('recipe.id = :id', { id })
+            .getOne();
+        if (!recipe) {
+            throw new common_1.NotFoundException('recipe not found');
+        }
+        await this.ingriedientsService.removeAllInRecipe(id);
+        await this.recipesRepository.remove(recipe);
+        return 'success';
     }
 };
 RecipesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(recipe_entity_1.Recipe)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        ingriedients_service_1.IngriedientsService])
 ], RecipesService);
 exports.RecipesService = RecipesService;
 //# sourceMappingURL=recipes.service.js.map

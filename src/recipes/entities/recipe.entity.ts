@@ -5,10 +5,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { RecipeToIngriedient } from './recipe_ingriedient.entity';
 
 @Entity()
 export class Recipe {
@@ -32,4 +36,15 @@ export class Recipe {
 
   @ManyToOne(() => User, (user) => user.recipes)
   user: User;
+
+  @OneToMany(
+    () => RecipeToIngriedient,
+    (recipeToIngriedient) => recipeToIngriedient.recipe,
+  )
+  recipeToIngriedient: RecipeToIngriedient[];
+
+  // @ManyToMany(() => Ingriedient)
+  // @JoinTable()
+  // ingriedients: Ingriedient[];
+  // ******* I need to do many to many with custom properties *********
 }
