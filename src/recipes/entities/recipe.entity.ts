@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { IsDefined } from 'class-validator';
+import { Photo } from 'src/photos/entities/photo.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -43,8 +44,6 @@ export class Recipe {
   )
   recipeToIngriedient: RecipeToIngriedient[];
 
-  // @ManyToMany(() => Ingriedient)
-  // @JoinTable()
-  // ingriedients: Ingriedient[];
-  // ******* I need to do many to many with custom properties *********
+  @OneToMany(() => Photo, (photos) => photos.recipe)
+  photos: Photo[];
 }

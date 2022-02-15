@@ -15,16 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipesController = void 0;
 const common_1 = require("@nestjs/common");
 const recipes_service_1 = require("./recipes.service");
-const create_recipe_dto_1 = require("./dto/create-recipe.dto");
-const update_recipe_dto_1 = require("./dto/update-recipe.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const sort_query_dto_1 = require("./dto/sort-query.dto");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
+const multer_config_1 = require("../photos/multer-config");
 let RecipesController = class RecipesController {
     constructor(recipesService) {
         this.recipesService = recipesService;
     }
-    create(createRecipeDto, request) {
-        return this.recipesService.create(createRecipeDto, request.user);
+    create(files, patchData, request) {
+        const createRecipeDto = typeof patchData === 'string' ? JSON.parse(patchData) : patchData;
+        return this.recipesService.create(createRecipeDto, request.user, files);
     }
     findAllShared(sortingParams, page) {
         const { sort, order } = sortingParams;
@@ -39,8 +41,10 @@ let RecipesController = class RecipesController {
         const { user: { id: userId }, } = request;
         return this.recipesService.findOne(id, userId);
     }
-    update(id, updateRecipeDto, request) {
-        return this.recipesService.update(id, updateRecipeDto, request.user);
+    update(files, id, patchData, request) {
+        const updateRecipeDto = typeof patchData === 'string' ? JSON.parse(patchData) : patchData;
+        console.log(updateRecipeDto);
+        return this.recipesService.update(id, updateRecipeDto, request.user, files);
     }
     remove(id, request) {
         const { user: { id: userId }, } = request;
@@ -49,11 +53,19 @@ let RecipesController = class RecipesController {
 };
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('image', 20, {
+        storage: (0, multer_1.diskStorage)({
+            destination: './uploadFiles',
+            filename: multer_config_1.editFileName,
+        }),
+        fileFilter: multer_config_1.imageFileFilter,
+    })),
     (0, common_1.HttpCode)(201),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Req)()),
+    __param(0, (0, common_1.UploadedFiles)()),
+    __param(1, (0, common_1.Body)('patchData')),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_recipe_dto_1.CreateRecipeDto, Object]),
+    __metadata("design:paramtypes", [Array, String, Object]),
     __metadata("design:returntype", void 0)
 ], RecipesController.prototype, "create", null);
 __decorate([
@@ -83,11 +95,19 @@ __decorate([
 ], RecipesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
-    __param(2, (0, common_1.Req)()),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('image', 20, {
+        storage: (0, multer_1.diskStorage)({
+            destination: './uploadFiles',
+            filename: multer_config_1.editFileName,
+        }),
+        fileFilter: multer_config_1.imageFileFilter,
+    })),
+    __param(0, (0, common_1.UploadedFiles)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('patchData')),
+    __param(3, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_recipe_dto_1.UpdateRecipeDto, Object]),
+    __metadata("design:paramtypes", [Array, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], RecipesController.prototype, "update", null);
 __decorate([

@@ -1,34 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  Res,
+} from '@nestjs/common';
+import RequestWithUser from 'src/auth/interfaces/request-with-user.interface';
 import { PhotosService } from './photos.service';
-import { CreatePhotoDto } from './dto/create-photo.dto';
-import { UpdatePhotoDto } from './dto/update-photo.dto';
 
 @Controller('photos')
 export class PhotosController {
   constructor(private readonly photosService: PhotosService) {}
 
-  @Post()
-  create(@Body() createPhotoDto: CreatePhotoDto) {
-    return this.photosService.create(createPhotoDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.photosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.photosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePhotoDto: UpdatePhotoDto) {
-    return this.photosService.update(+id, updatePhotoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.photosService.remove(+id);
+  @Get(':imageName')
+  async findOne(
+    @Param('imageName') imageName: string,
+    @Req() req: RequestWithUser,
+    @Res() res: any,
+  ) {
+    // @TODO write guard that will be checking if the recipe is shared or if the user equals this from photo. User ID as well as the isShared info could be stored in image name.
+    const photo = await this.photosService.getOnePhoto(imageName);
+    res.writeHead(200, { 'Content-Type': 'image/gif' });
+    res.end(photo, 'binary');
   }
 }

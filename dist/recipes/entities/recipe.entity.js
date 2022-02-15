@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recipe = void 0;
+const photo_entity_1 = require("../../photos/entities/photo.entity");
 const user_entity_1 = require("../../users/entities/user.entity");
 const typeorm_1 = require("typeorm");
 const recipe_ingriedient_entity_1 = require("./recipe_ingriedient.entity");
@@ -47,6 +48,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => recipe_ingriedient_entity_1.RecipeToIngriedient, (recipeToIngriedient) => recipeToIngriedient.recipe),
     __metadata("design:type", Array)
 ], Recipe.prototype, "recipeToIngriedient", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => photo_entity_1.Photo, (photos) => photos.recipe),
+    __metadata("design:type", Array)
+], Recipe.prototype, "photos", void 0);
 Recipe = __decorate([
     (0, typeorm_1.Entity)()
 ], Recipe);

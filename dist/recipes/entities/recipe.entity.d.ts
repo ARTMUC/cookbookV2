@@ -1,3 +1,4 @@
+import { Photo } from 'src/photos/entities/photo.entity';
 import { User } from 'src/users/entities/user.entity';
 import { RecipeToIngriedient } from './recipe_ingriedient.entity';
 export declare class Recipe {
@@ -9,4 +10,5 @@ export declare class Recipe {
     isShared: boolean;
     user: User;
     recipeToIngriedient: RecipeToIngriedient[];
+    photos: Photo[];
 }

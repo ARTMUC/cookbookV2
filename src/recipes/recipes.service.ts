@@ -1,6 +1,7 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import RequestWithUser from 'src/auth/interfaces/request-with-user.interface';
+import { PhotosService } from 'src/photos/photos.service';
 import { User } from 'src/users/entities/user.entity';
 import { createQueryBuilder, getConnection, Repository } from 'typeorm';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -16,20 +17,32 @@ export class RecipesService {
     @InjectRepository(Recipe)
     private recipesRepository: Repository<Recipe>,
     private readonly ingriedientsService: IngriedientsService,
+    private readonly photosService: PhotosService,
   ) {}
 
-  async create(recipeData: CreateRecipeDto, user: User) {
+  async create(
+    recipeData: CreateRecipeDto,
+    user: User,
+    files: Array<Express.Multer.File>,
+  ) {
     const savedRecipe = await this.saveRecipe(recipeData, user);
     recipeData.ingriedients.forEach(async (ingriedient) => {
       await this.ingriedientsService.create(ingriedient, savedRecipe);
     });
 
+    await this.photosService.create(files, savedRecipe);
+
     return 'success';
   }
 
   private async saveRecipe(recipeData: CreateRecipeDto, user: User) {
-    const newRecipe = this.recipesRepository.create(recipeData);
-    newRecipe.user = user;
+    const { title, description, isShared } = recipeData;
+    const newRecipe = this.recipesRepository.create({
+      title,
+      description,
+      isShared,
+      user,
+    });
     return await this.recipesRepository.save(newRecipe);
   }
 
@@ -50,6 +63,7 @@ export class RecipesService {
 
     const sharedRecipesQuery = (() => {
       let query = this.recipesRepository.createQueryBuilder('recipe');
+      query = query.leftJoinAndSelect('recipe.photos', 'photos');
       query = query.leftJoinAndSelect('recipe.user', 'user');
       query = query.leftJoinAndSelect(
         'recipe.recipeToIngriedient',
@@ -103,6 +117,7 @@ export class RecipesService {
     const sharedRecipesQuery = (() => {
       let query = this.recipesRepository.createQueryBuilder('recipe');
       query = query.leftJoinAndSelect('recipe.user', 'user');
+      query = query.leftJoinAndSelect('recipe.photos', 'photos');
       query = query.where('recipe.userId = :id', { id: userId });
       query = query.leftJoinAndSelect(
         'recipe.recipeToIngriedient',
@@ -130,19 +145,29 @@ export class RecipesService {
   }
 
   async findOne(id: string, userId: string) {
+    const recipe = await this.getOneRecipe(id, userId);
+    return this.mapRecipeQueryResult(recipe);
+  }
+
+  private async getOneRecipe(id: string, userId: string) {
     const recipe = await this.recipesRepository
       .createQueryBuilder('recipe')
       .leftJoinAndSelect('recipe.user', 'user')
+      .leftJoinAndSelect('recipe.photos', 'photos')
       .leftJoinAndSelect('recipe.recipeToIngriedient', 'recipeToIngriedient')
       .leftJoinAndSelect('recipeToIngriedient.ingriedient', 'ingriedient')
       .where('recipe.id = :id', { id })
+      .andWhere('recipe.userId = :id OR recipe.isShared = :isShared', {
+        id,
+        isShared: true,
+      })
       .getOne();
 
     if (!recipe) throw new NotFoundException('recipe not found');
     if (recipe.user.id !== userId && !recipe.isShared)
       throw new NotFoundException('recipe not found');
 
-    return this.mapRecipeQueryResult(recipe);
+    return recipe;
   }
 
   private mapRecipeQueryResult(recipe: Recipe): ReturnRecipe {
@@ -160,13 +185,19 @@ export class RecipesService {
     } as ReturnRecipe;
   }
 
-  async update(id: string, updateRecipeData: UpdateRecipeDto, user: User) {
+  async update(
+    id: string,
+    updateRecipeData: UpdateRecipeDto,
+    user: User,
+    files: Array<Express.Multer.File>,
+  ) {
     const recipe = await this.findOne(id, user.id);
-    const patchedRecipeData = {
-      ...recipe,
-      ...updateRecipeData,
-    } as ReturnRecipe;
-    const updatedRecipe = await this.updateRecipe(patchedRecipeData, user);
+
+    const updatedRecipe = await this.updateRecipe(
+      recipe,
+      updateRecipeData,
+      user,
+    );
 
     await this.ingriedientsService.removeAllInRecipe(id);
 
@@ -174,29 +205,43 @@ export class RecipesService {
       await this.ingriedientsService.update(ingriedient, updatedRecipe);
     });
 
+    const photosToBeRemovedList = recipe.photos.filter((item1) =>
+      updateRecipeData.photos.some((item2) => item1.id !== item2.id),
+    );
+    await this.photosService.update(
+      files,
+      updatedRecipe,
+      photosToBeRemovedList,
+    );
+
     return 'success';
   }
 
-  private async updateRecipe(patchedRecipeData: ReturnRecipe, user: User) {
-    patchedRecipeData.user = user;
-    return (await this.recipesRepository.save(patchedRecipeData)) as Recipe;
+  private async updateRecipe(
+    recipe: ReturnRecipe,
+    recipeData: UpdateRecipeDto,
+    user: User,
+  ) {
+    const { title, description, isShared } = recipeData;
+    const updatedRecipe = this.recipesRepository.create({
+      ...recipe,
+      title,
+      description,
+      isShared,
+      user,
+    });
+    return await this.recipesRepository.save(updatedRecipe);
   }
 
   async remove(id: string, userId: string) {
-    const recipe = await this.recipesRepository
-      .createQueryBuilder('recipe')
-      .leftJoinAndSelect('recipe.user', 'user')
-      .where('recipe.userId = :userId', { userId })
-      .andWhere('recipe.id = :id', { id })
-      .getOne();
+    const recipe = await this.getOneRecipe(id, userId);
 
     if (!recipe) {
       throw new NotFoundException('recipe not found');
     }
     await this.ingriedientsService.removeAllInRecipe(id);
-
+    await this.photosService.remove(recipe.photos);
     await this.recipesRepository.remove(recipe);
-
     return 'success';
   }
 }
